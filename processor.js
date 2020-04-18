@@ -6,7 +6,7 @@ const alerts = require("./service/alerts");
 let previousSnapshotWhichFiredAlert;
 
 function startFetchRatesJob() {
-    const job = schedule.scheduleJob('0 */10 * ? * *', function (fireDate) {
+    const job = schedule.scheduleJob('0 */5 * ? * *', function (fireDate) {
         rates.getRates('BTC', function (err, data) {
             if (err) {
                 console.error(err);
@@ -28,19 +28,18 @@ function startDeleteOldSnapshotsJob() {
 }
 
 function startAnalyzeVolatilityJob() {
-    const job = schedule.scheduleJob('0 */10 * ? * *', function (fireDate) {
-    // const job = schedule.scheduleJob('*/5 * * ? * *', function (fireDate) {
+    const job = schedule.scheduleJob('0 */5 * ? * *', function (fireDate) {
         snapshots.getSnapshotsInLast24Hours()
             .then(snapshots => {
                 if (snapshots && snapshots.length > 1) {
-                    let oldest = snapshots[0].usdRate;
+                    let oldest = snapshots[0];
                     if (previousSnapshotWhichFiredAlert && !previousAlertIsTooOld(oldest)) {
                         oldest = previousSnapshotWhichFiredAlert;
                     }
-                    const newest = snapshots[snapshots.length - 1].usdRate;
-                    const percentageDifference = Math.abs(1 - oldest / newest) * 100;
-                    if (percentageDifference > 1) {
-                        alerts.makeHighVolatilityAlert(percentageDifference, newest);
+                    const newest = snapshots[snapshots.length - 1];
+                    const percentageDifference = (1 - oldest.usdRate / newest.usdRate) * 100;
+                    if (Math.abs(percentageDifference) > (process.env.VOLATILITY_ALERT_THRESHOLD || 1)) {
+                        alerts.makeHighVolatilityAlert(percentageDifference, newest.usdRate, newest.rubRate);
                         previousSnapshotWhichFiredAlert = newest;
                     }
                 }
@@ -53,7 +52,7 @@ function previousAlertIsTooOld(currentOldest) {
 }
 
 function start() {
-    startDeleteOldSnapshotsJob();
+    // startDeleteOldSnapshotsJob();
     startFetchRatesJob();
     startAnalyzeVolatilityJob();
 }
