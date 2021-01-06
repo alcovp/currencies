@@ -1,6 +1,5 @@
 var express = require('express');
 const rates = require("../service/rates");
-const {formatNumber} = require("../util");
 const {wrapPreformattedText} = require("../util");
 var router = express.Router();
 

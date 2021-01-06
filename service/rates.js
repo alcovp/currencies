@@ -1,3 +1,4 @@
+const {formatNumber} = require("../util");
 var Client = require('coinbase').Client;
 var client = new Client(
     {
