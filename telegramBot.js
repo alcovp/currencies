@@ -22,7 +22,7 @@ if (token) {
 
     bot.onText(/\/summary/, (msg, match) => {
         const chatId = msg.chat.id;
-        if (superUserId && superUserId === chatId) {
+        if (superUserId && Number(superUserId) === chatId) {
             rates.getSummary(function (err, data) {
                 if (data) {
                     bot.sendMessage(chatId, data);
