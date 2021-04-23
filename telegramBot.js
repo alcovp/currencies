@@ -20,6 +20,29 @@ if (token) {
             .catch(err => console.error(err));
     });
 
+    bot.onText(/^\/setbalance (\d+\.?\d*)$/, (msg, match) => {
+        const chatId = msg.chat.id;
+        const balance = match[1];
+        telegram.updateBalance(chatId, balance)
+            .then()
+            .catch(err => console.error(err));
+    });
+
+    bot.onText(/\/getbalance/, (msg, match) => {
+        const chatId = msg.chat.id;
+        telegram.getTelegramChat(chatId)
+            .then(chat => {
+                rates.getBalance(chat.balance, function (err, data) {
+                    if (data) {
+                        bot.sendMessage(chatId, data);
+                    } else {
+                        console.error(err);
+                    }
+                });
+            })
+            .catch(err => console.error(err));
+    });
+
     bot.onText(/\/summary/, (msg, match) => {
         const chatId = msg.chat.id;
         if (superUserId && Number(superUserId) === chatId) {

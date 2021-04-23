@@ -9,6 +9,10 @@ var schema = new mongoose.Schema({
     username: {
         type: String,
         required: true
+    },
+    balance: {
+        type: Number,
+        required: false
     }
 });
 var TelegramChat = mongoose.model('TelegramChat', schema);

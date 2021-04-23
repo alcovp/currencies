@@ -41,7 +41,26 @@ function getSummary(callback) {
     })
 }
 
+function getBalance(balance, callback) {
+    getRates('BTC', function (err, data) {
+        if (data) {
+            const btcUsdRates = data.rates.USD;
+            const btcRubRates = data.rates.RUB;
+
+            var output = "";
+            const usdRubRates = btcRubRates / btcUsdRates;
+            output += balance + " BTC\n";
+            output += formatNumber(btcUsdRates * balance) + " USD\n";
+            output += formatNumber(btcRubRates * balance) + " RUB\n";
+            callback(null, output);
+        } else {
+            callback(err);
+        }
+    })
+}
+
 module.exports = {
     getRates,
-    getSummary
+    getSummary,
+    getBalance
 }
