@@ -6,7 +6,7 @@
         "start": "node bin/currencies"
     },
     "dependencies": {
-        "chart.js": "^2.9.3",
+        "chart.js": "^2.9.4",
         "coinbase": "^2.0.8",
         "cookie-parser": "~1.4.4",
         "debug": "~2.6.9",
