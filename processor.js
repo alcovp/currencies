@@ -39,7 +39,13 @@ function startAnalyzeVolatilityJob() {
                     const newest = snapshots[snapshots.length - 1];
                     const percentageDifference = (1 - oldest.usdRate / newest.usdRate) * 100;
                     if (Math.abs(percentageDifference) > (process.env.VOLATILITY_ALERT_THRESHOLD || 1)) {
-                        alerts.makeHighVolatilityAlert(percentageDifference, newest.usdRate, newest.rubRate);
+                        alerts.makeHighVolatilityAlert(
+                            percentageDifference,
+                            newest.usdRate,
+                            newest.rubRate,
+                            newest.amdRate,
+                            newest.gelRate
+                        );
                         previousSnapshotWhichFiredAlert = newest;
                     }
                 }

@@ -16,6 +16,14 @@ var schema = new mongoose.Schema({
     rubRate: {
         type: String,
         required: true
+    },
+    amdRate: {
+        type: String,
+        required: true
+    },
+    gelRate: {
+        type: String,
+        required: true
     }
 });
 var Snapshot = mongoose.model('Snapshot', schema);
