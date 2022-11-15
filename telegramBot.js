@@ -2,6 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const snapshots = require("./service/snapshots");
 const telegram = require("./service/telegram");
 const rates = require("./service/rates");
+const alerts = require("./service/alerts");
 
 const token = process.env.TELEGRAM_BOT_TOKEN || undefined;
 const superUserId = process.env.SUPER_USER_TELEGRAM_CHAT_ID || undefined;
@@ -53,6 +54,16 @@ if (token) {
                     console.error(err);
                 }
             });
+        } else {
+            bot.sendMessage(chatId, "not authorized");
+        }
+    });
+
+    bot.onText(/^\/announcement (.*)$/, (msg, match) => {
+        const chatId = msg.chat.id;
+        const announcement = match[1];
+        if (superUserId && Number(superUserId) === chatId) {
+            alerts.makeAnnouncement(announcement);
         } else {
             bot.sendMessage(chatId, "not authorized");
         }
