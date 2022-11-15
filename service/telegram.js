@@ -10,7 +10,14 @@ function saveTelegramChat(id, username) {
 
 function deleteTelegramChat(id) {
     return TelegramChat.findOneAndDelete(
-        {id: id}
+        {id: id},
+        function (error, doc) {
+            if (error) {
+                console.error(error);
+            } else {
+                console.log('deleted ' + id);
+            }
+        }
     );
 }
 
