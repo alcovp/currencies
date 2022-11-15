@@ -10,7 +10,7 @@ let bot;
 if (token) {
     bot = new TelegramBot(token, {polling: true});
 
-// bot.on("polling_error", (err) => console.log(err));
+    // bot.on("polling_error", (err) => console.log(err));
 
     bot.onText(/\/price/, (msg, match) => {
         const chatId = msg.chat.id;
@@ -59,7 +59,7 @@ if (token) {
         }
     });
 
-    bot.onText(/^\/announcement (.*)$/, (msg, match) => {
+    bot.onText(/\/announcement (.+)/, (msg, match) => {
         const chatId = msg.chat.id;
         const announcement = match[1];
         if (superUserId && Number(superUserId) === chatId) {
