@@ -8,6 +8,12 @@ function saveTelegramChat(id, username) {
     );
 }
 
+function deleteTelegramChat(id) {
+    return TelegramChat.findOneAndDelete(
+        {id: id}
+    );
+}
+
 function getTelegramChats() {
     return TelegramChat
         .find({})
@@ -31,6 +37,7 @@ function getTelegramChat(id) {
 
 module.exports = {
     saveTelegramChat,
+    deleteTelegramChat,
     getTelegramChats,
     updateBalance,
     getTelegramChat
