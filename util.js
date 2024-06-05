@@ -3,7 +3,10 @@ function wrapPreformattedText(text) {
 }
 
 function formatNumber(number) {
-    return Number(number).toFixed(2);
+    if (number < 1) {
+        return Number(number).toFixed(4)
+    }
+    return Number(number).toFixed(2)
 }
 
 module.exports = {

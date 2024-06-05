@@ -1,6 +1,11 @@
 const {Snapshot} = require("../models/snapshot");
 var moment = require('moment');
 
+const memoryCache = {
+    watchedCurrencies: ['BTC', 'TON', 'NOT'],
+    previousSnapshotsWhichFiredAlert: new Map(),
+}
+
 function saveSnapshot(data) {
     const btcUsdRates = data.rates.USD;
     const btcRubRates = data.rates.RUB;
@@ -35,10 +40,11 @@ function getSnapshotsInLast24Hours() {
         .exec();
 }
 
-function getNewestSnapshot() {
+function getNewestSnapshot(currencyName) {
     return Snapshot
         .findOne({})
         .select('-_id date currencyName usdRate rubRate amdRate gelRate')
+        .where('currencyName').equals(currencyName)
         .sort('-date')
         .exec();
 }
@@ -51,9 +57,15 @@ function deleteOldSnapshots() {
         .exec();
 }
 
+function getWatchedCurrencies() {
+    return memoryCache.watchedCurrencies
+}
+
 module.exports = {
+    memoryCache,
     saveSnapshot,
     getSnapshotsInLast24Hours,
     deleteOldSnapshots,
-    getNewestSnapshot
+    getNewestSnapshot,
+    getWatchedCurrencies,
 }

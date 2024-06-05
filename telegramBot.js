@@ -3,6 +3,7 @@ const snapshots = require("./service/snapshots");
 const telegram = require("./service/telegram");
 const rates = require("./service/rates");
 const {formatNumber} = require("./util");
+const {memoryCache} = require("./service/snapshots");
 
 const token = process.env.TELEGRAM_BOT_TOKEN || undefined;
 const superUserId = process.env.SUPER_USER_TELEGRAM_CHAT_ID || undefined;
@@ -14,17 +15,21 @@ if (token) {
 
     bot.onText(/\/price/, (msg, match) => {
         const chatId = msg.chat.id;
-        snapshots.getNewestSnapshot()
-            .then(snapshot => {
-                bot.sendMessage(
-                    chatId,
-                    '$' + formatNumber(snapshot.usdRate)
-                    + '\n₽' + formatNumber(snapshot.rubRate)
-                    + '\nԴ' + formatNumber(snapshot.amdRate)
-                    + '\n₾' + formatNumber(snapshot.gelRate)
-                );
-            })
-            .catch(err => console.error(err));
+        snapshots.getWatchedCurrencies().forEach(currency => {
+            snapshots.getNewestSnapshot(currency)
+                .then(snapshot => {
+                    const chatMessage =
+                        snapshot.currencyName
+                        + '\n$' + formatNumber(snapshot.usdRate)
+                        + '\n₽' + formatNumber(snapshot.rubRate)
+                    // + '\nԴ' + formatNumber(snapshot.amdRate)
+                    // + '\n₾' + formatNumber(snapshot.gelRate)
+
+                    bot.sendMessage(chatId, chatMessage)
+                        .catch(console.error)
+                })
+                .catch(console.error)
+        })
     });
 
     bot.onText(/^\/setbalance (\d+\.?\d*)$/, (msg, match) => {
@@ -32,7 +37,7 @@ if (token) {
         const balance = match[1];
         telegram.updateBalance(chatId, balance)
             .then()
-            .catch(err => console.error(err));
+            .catch(console.error)
     });
 
     bot.onText(/\/getbalance/, (msg, match) => {
@@ -41,13 +46,14 @@ if (token) {
             .then(chat => {
                 rates.getBalance(chat.balance, function (err, data) {
                     if (data) {
-                        bot.sendMessage(chatId, data);
+                        bot.sendMessage(chatId, data)
+                            .catch(console.error)
                     } else {
                         console.error(err);
                     }
                 });
             })
-            .catch(err => console.error(err));
+            .catch(console.error)
     });
 
     bot.onText(/\/summary/, (msg, match) => {
@@ -55,13 +61,26 @@ if (token) {
         if (superUserId && Number(superUserId) === chatId) {
             rates.getSummary(function (err, data) {
                 if (data) {
-                    bot.sendMessage(chatId, data);
+                    bot.sendMessage(chatId, data)
+                        .catch(console.error)
                 } else {
                     console.error(err);
                 }
             });
         } else {
-            bot.sendMessage(chatId, "not authorized");
+            bot.sendMessage(chatId, "not authorized")
+                .catch(console.error)
+        }
+    });
+
+    bot.onText(/\/debug/, (msg, match) => {
+        const chatId = msg.chat.id;
+        if (superUserId && Number(superUserId) === chatId) {
+            bot.sendMessage(chatId, JSON.stringify(memoryCache, null, 4))
+                .catch(console.error)
+        } else {
+            bot.sendMessage(chatId, "not authorized")
+                .catch(console.error)
         }
     });
 
@@ -75,7 +94,8 @@ if (token) {
                 console.error(e);
             }
         } else {
-            bot.sendMessage(chatId, "not authorized");
+            bot.sendMessage(chatId, "not authorized")
+                .catch(console.error)
         }
     });
 
