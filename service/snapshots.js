@@ -3,7 +3,7 @@ var moment = require('moment');
 
 const memoryCache = {
     watchedCurrencies: ['BTC', 'TON', 'NOT'],
-    previousSnapshotsWhichFiredAlert: new Map(),
+    previousSnapshotsWhichFiredAlert: {},
 }
 
 function saveSnapshot(data) {
@@ -57,6 +57,10 @@ function deleteOldSnapshots() {
         .exec();
 }
 
+function getMemoryCache() {
+    return memoryCache
+}
+
 function getWatchedCurrencies() {
     return memoryCache.watchedCurrencies
 }
@@ -68,4 +72,5 @@ module.exports = {
     deleteOldSnapshots,
     getNewestSnapshot,
     getWatchedCurrencies,
+    getMemoryCache,
 }

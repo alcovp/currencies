@@ -2,7 +2,7 @@ const rates = require("./service/rates");
 const snapshots = require("./service/snapshots");
 const schedule = require('node-schedule');
 const alerts = require("./service/alerts");
-const {memoryCache} = require("./service/snapshots");
+const {getMemoryCache} = require("./service/snapshots");
 
 const currencies = snapshots.getWatchedCurrencies()
 
@@ -32,8 +32,10 @@ function startDeleteOldSnapshotsJob() {
 }
 
 function startAnalyzeVolatilityJob() {
-    const previousSnapshotsWhichFiredAlert = memoryCache.previousSnapshotsWhichFiredAlert
     const job = schedule.scheduleJob('0 */5 * ? * *', function (fireDate) {
+        console.log('startAnalyzeVolatilityJob')
+        const previousSnapshotsWhichFiredAlert = snapshots.getMemoryCache().previousSnapshotsWhichFiredAlert
+        console.log('previousSnapshotsWhichFiredAlert: ' + JSON.stringify(previousSnapshotsWhichFiredAlert, null, 4))
         snapshots.getSnapshotsInLast24Hours()
             .then(allSnapshots => {
                 const groupedSnapshots = {}
@@ -43,14 +45,13 @@ function startAnalyzeVolatilityJob() {
                     }
                     groupedSnapshots[snapshot.currencyName].push(snapshot)
                 })
-                console.log('grouped as: ' + JSON.stringify(groupedSnapshots, null, 4))
                 currencies.forEach((currency) => {
                     const snapshots = groupedSnapshots[currency]
                     if (snapshots && snapshots.length > 1) {
                         let oldest = snapshots[0];
-                        if (previousSnapshotsWhichFiredAlert.get(currency)
+                        if (previousSnapshotsWhichFiredAlert[currency]
                             && !previousAlertIsTooOld(oldest, currency)) {
-                            oldest = previousSnapshotsWhichFiredAlert.get(currency);
+                            oldest = previousSnapshotsWhichFiredAlert[currency]
                         }
                         const newest = snapshots[snapshots.length - 1];
                         const percentageDifference = (1 - oldest.usdRate / newest.usdRate) * 100;
@@ -63,7 +64,9 @@ function startAnalyzeVolatilityJob() {
                                 newest.amdRate,
                                 newest.gelRate
                             );
-                            previousSnapshotsWhichFiredAlert.set(currency, newest);
+                            console.log('setting new newest: ' + JSON.stringify(newest, null,4))
+                            previousSnapshotsWhichFiredAlert[currency] = newest
+                            console.log('previousSnapshotsWhichFiredAlert: ' + JSON.stringify(previousSnapshotsWhichFiredAlert, null, 4))
                         }
                     }
                 })
@@ -72,7 +75,9 @@ function startAnalyzeVolatilityJob() {
 }
 
 function previousAlertIsTooOld(currentOldest, currency) {
-    return currentOldest.date > memoryCache.previousSnapshotsWhichFiredAlert.get(currency);
+    console.log('previousAlertIsTooOld')
+    console.log(currentOldest.date + ' > ' + getMemoryCache().previousSnapshotsWhichFiredAlert[currency].date)
+    return currentOldest.date > getMemoryCache().previousSnapshotsWhichFiredAlert[currency].date;
 }
 
 function start() {

@@ -3,7 +3,6 @@ const snapshots = require("./service/snapshots");
 const telegram = require("./service/telegram");
 const rates = require("./service/rates");
 const {formatNumber} = require("./util");
-const {memoryCache} = require("./service/snapshots");
 
 const token = process.env.TELEGRAM_BOT_TOKEN || undefined;
 const superUserId = process.env.SUPER_USER_TELEGRAM_CHAT_ID || undefined;
@@ -76,7 +75,7 @@ if (token) {
     bot.onText(/\/debug/, (msg, match) => {
         const chatId = msg.chat.id;
         if (superUserId && Number(superUserId) === chatId) {
-            bot.sendMessage(chatId, JSON.stringify(memoryCache, null, 4))
+            bot.sendMessage(chatId, JSON.stringify(snapshots.getMemoryCache(), null, 4))
                 .catch(console.error)
         } else {
             bot.sendMessage(chatId, "not authorized")

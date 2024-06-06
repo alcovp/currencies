@@ -3,7 +3,8 @@
     "version": "0.0.0",
     "private": true,
     "scripts": {
-        "start": "node bin/currencies"
+        "start": "node bin/currencies",
+        "test": "node test/testCoinbase.js"
     },
     "dependencies": {
         "chart.js": "^2.9.3",
