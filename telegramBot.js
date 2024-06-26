@@ -15,7 +15,7 @@ if (token) {
     bot.onText(/\/price/, (msg, match) => {
         const chatId = msg.chat.id;
         snapshots.getWatchedCurrencies().forEach(currency => {
-            snapshots.getNewestSnapshot(currency)
+            snapshots.getNewestSnapshot(currency.code)
                 .then(snapshot => {
                     const chatMessage =
                         snapshot.currencyName

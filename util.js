@@ -3,6 +3,9 @@ function wrapPreformattedText(text) {
 }
 
 function formatNumber(number) {
+    if (number < 0) {
+        return 'NA'
+    }
     if (number < 1) {
         return Number(number).toFixed(4)
     }

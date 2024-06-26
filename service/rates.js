@@ -1,27 +1,48 @@
 const {formatNumber} = require("../util");
 var Client = require('coinbase').Client;
-var client = new Client(
+var coinbase = new Client(
     {
         'apiKey': 'API KEY',
         'apiSecret': 'API SECRET',
         'strictSSL': false
     }
 );
+const fetch = require('node-fetch')
 
-function getRates(currencyCode3, callback) {
-    client.getExchangeRates({'currency': currencyCode3}, function (err, response) {
-        if (response) {
-            callback(null, response.data);
-        } else {
-            callback(err.stack);
-        }
-    });
+function getRates(currency, callback) {
+    if (currency.code === 'TON') {
+        fetch(
+            `https://pro-api.coinmarketcap.com/v2/tools/price-conversion?amount=1&id=${currency.id}&convert=USD`,
+            {method: 'GET', headers: {'X-CMC_PRO_API_KEY': process.env.CMC_API_KEY}}
+        )
+            .then(response => response.json())
+            .then(response => {
+                callback(null, {
+                    currency: currency.code,
+                    rates: {
+                        USD: response.data.quote.USD.price,
+                        RUB: -1,
+                        AMD: -1,
+                        GEL: -1,
+                    }
+                })
+            })
+            .catch(callback)
+    } else {
+        coinbase.getExchangeRates({'currency': currency.code}, function (err, response) {
+            if (response) {
+                callback(null, response.data);
+            } else {
+                callback(err.stack);
+            }
+        });
+    }
 }
 
 function getSummary(callback) {
     const usd = process.env.USD || 1;
     const btc = process.env.BTC || 1;
-    getRates('BTC', function (err, data) {
+    getRates({id: 1, code: 'BTC'}, function (err, data) {
         if (data) {
             const btcUsdRates = data.rates.USD;
             const btcRubRates = data.rates.RUB;
@@ -42,7 +63,7 @@ function getSummary(callback) {
 }
 
 function getBalance(balance, callback) {
-    getRates('BTC', function (err, data) {
+    getRates({id: 1, code: 'BTC'}, function (err, data) {
         if (data) {
             const btcUsdRates = data.rates.USD;
             const btcRubRates = data.rates.RUB;

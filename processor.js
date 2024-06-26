@@ -14,7 +14,7 @@ function startFetchRatesJob() {
                     console.error(err);
                 } else {
                     console.log('got new snapshot: ' + data.currency + ' with usd rate: ' + data.rates.USD)
-                    snapshots.saveSnapshot(data);
+                    snapshots.saveSnapshot(data).catch(console.error)
                 }
             })
         })
@@ -45,19 +45,19 @@ function startAnalyzeVolatilityJob() {
                     }
                     groupedSnapshots[snapshot.currencyName].push(snapshot)
                 })
-                currencies.forEach((currency) => {
-                    const snapshots = groupedSnapshots[currency]
+                currencies.forEach(({code}) => {
+                    const snapshots = groupedSnapshots[code]
                     if (snapshots && snapshots.length > 1) {
                         let oldest = snapshots[0];
-                        if (previousSnapshotsWhichFiredAlert[currency]
-                            && !previousAlertIsTooOld(oldest, currency)) {
-                            oldest = previousSnapshotsWhichFiredAlert[currency]
+                        if (previousSnapshotsWhichFiredAlert[code]
+                            && !previousAlertIsTooOld(oldest, code)) {
+                            oldest = previousSnapshotsWhichFiredAlert[code]
                         }
                         const newest = snapshots[snapshots.length - 1];
                         const percentageDifference = (1 - oldest.usdRate / newest.usdRate) * 100;
                         if (Math.abs(percentageDifference) > (process.env.VOLATILITY_ALERT_THRESHOLD || 1)) {
                             alerts.makeHighVolatilityAlert(
-                                currency,
+                                code,
                                 percentageDifference,
                                 newest.usdRate,
                                 newest.rubRate,
@@ -65,7 +65,7 @@ function startAnalyzeVolatilityJob() {
                                 newest.gelRate
                             );
                             console.log('setting new newest: ' + JSON.stringify(newest, null,4))
-                            previousSnapshotsWhichFiredAlert[currency] = newest
+                            previousSnapshotsWhichFiredAlert[code] = newest
                             console.log('previousSnapshotsWhichFiredAlert: ' + JSON.stringify(previousSnapshotsWhichFiredAlert, null, 4))
                         }
                     }

@@ -2,7 +2,11 @@ const {Snapshot} = require("../models/snapshot");
 var moment = require('moment');
 
 const memoryCache = {
-    watchedCurrencies: ['BTC', 'TON', 'NOT'],
+    watchedCurrencies: [
+        {id: 1, code: 'BTC'},
+        {id: 11419, code: 'TON'},
+        {id: 28850, code: 'NOT'},
+    ],
     previousSnapshotsWhichFiredAlert: {},
 }
 
