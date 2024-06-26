@@ -3,7 +3,7 @@ function wrapPreformattedText(text) {
 }
 
 function formatNumber(number) {
-    if (number < 0) {
+    if (number === -1) {
         return 'NA'
     }
     if (number < 1) {
