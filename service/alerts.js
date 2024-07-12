@@ -9,7 +9,7 @@ function makeHighVolatilityAlert(currency, diff, usdRate, rubRate, amdRate, gelR
                 chats.forEach(function (chat) {
                     bot.sendMessage(
                         chat.id,
-                        currency
+                        getDiffSign(diff) + currency
                         + '\n' + formatNumber(diff) + '%'
                         + '\n$' + formatNumber(usdRate)
                         + '\n₽' + formatNumber(rubRate)
@@ -24,6 +24,17 @@ function makeHighVolatilityAlert(currency, diff, usdRate, rubRate, amdRate, gelR
     } else {
         console.error('telegram bot is undefined');
     }
+}
+
+function getDiffSign(diff) {
+    const threshold = process.env.VOLATILITY_ALERT_THRESHOLD
+    if (diff > threshold + 1) {
+        return '⏫'
+    }
+    if (diff < threshold - 1) {
+        return '⏬'
+    }
+    return diff > 0 ? '🔼' : '🔽'
 }
 
 module.exports = {
