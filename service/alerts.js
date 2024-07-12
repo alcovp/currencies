@@ -31,7 +31,7 @@ function getDiffSign(diff) {
     if (diff > threshold + 1) {
         return '⏫'
     }
-    if (diff < threshold - 1) {
+    if (diff < -threshold - 1) {
         return '⏬'
     }
     return diff > 0 ? '🔼' : '🔽'
