@@ -10,9 +10,9 @@ function makeHighVolatilityAlert(currency, diff, usdRate, rubRate, amdRate, gelR
                     bot.sendMessage(
                         chat.id,
                         getDiffSign(diff) + currency
-                        + '\n' + formatNumber(diff) + '%'
-                        + '\n$' + formatNumber(usdRate)
-                        + '\n₽' + formatNumber(rubRate)
+                        + ' ' + formatNumber(diff) + '%'
+                        + ' $' + formatNumber(usdRate)
+                        + ' ₽' + formatNumber(rubRate)
                         // + '\nԴ' + formatNumber(amdRate)
                         // + '\n₾' + formatNumber(gelRate)
                     )
