@@ -1,5 +1,5 @@
 const telegram = require("./telegram");
-const {formatNumber} = require("../util");
+const {formatNumber, formatDiff} = require("../util");
 const {bot, handleMessageError} = require("../telegramBot");
 
 function makeHighVolatilityAlert(currency, diff, usdRate, rubRate, amdRate, gelRate) {
@@ -10,7 +10,7 @@ function makeHighVolatilityAlert(currency, diff, usdRate, rubRate, amdRate, gelR
                     bot.sendMessage(
                         chat.id,
                         getDiffSign(diff) + currency
-                        + ' ' + formatNumber(diff) + '%'
+                        + ' ' + formatDiff(diff) + '%'
                         + ' $' + formatNumber(usdRate)
                         + ' ₽' + formatNumber(rubRate)
                         // + '\nԴ' + formatNumber(amdRate)
