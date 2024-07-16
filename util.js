@@ -6,10 +6,10 @@ function formatNumber(number) {
     if (number === "-1") {
         return 'NA'
     }
-    if (number < 1) {
+    if (+number < 1) {
         return Number(number).toFixed(4)
     }
-    if (number > 1000) {
+    if (+number > 1000) {
         return Number(number).toFixed()
     }
     return Number(number).toFixed(2)
