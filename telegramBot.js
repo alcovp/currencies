@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const snapshots = require("./service/snapshots");
 const telegram = require("./service/telegram");
 const rates = require("./service/rates");
-const {formatNumber} = require("./util");
+const {formatNumber, formatDiff} = require("./util");
 
 const token = process.env.TELEGRAM_BOT_TOKEN || undefined;
 const superUserId = process.env.SUPER_USER_TELEGRAM_CHAT_ID || undefined;
@@ -19,8 +19,8 @@ if (token) {
                 .then(snapshot => {
                     const chatMessage =
                         snapshot.currencyName
-                        + '\n$' + formatNumber(snapshot.usdRate)
-                        + '\n₽' + formatNumber(snapshot.rubRate)
+                        + ' $' + formatNumber(snapshot.usdRate)
+                        + ' ₽' + formatNumber(snapshot.rubRate)
                     // + '\nԴ' + formatNumber(snapshot.amdRate)
                     // + '\n₾' + formatNumber(snapshot.gelRate)
 
