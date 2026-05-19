@@ -9,25 +9,11 @@ var coinbase = new Client(
 );
 const fetch = require('node-fetch')
 
+const coinMarketCapCurrencies = new Set(['TON', 'NOT'])
+
 function getRates(currency, callback) {
-    if (currency.code === 'TON') {
-        fetch(
-            `https://pro-api.coinmarketcap.com/v2/tools/price-conversion?amount=1&id=${currency.id}&convert=USD`,
-            {method: 'GET', headers: {'X-CMC_PRO_API_KEY': process.env.CMC_API_KEY}}
-        )
-            .then(response => response.json())
-            .then(response => {
-                callback(null, {
-                    currency: currency.code,
-                    rates: {
-                        USD: response.data.quote.USD.price,
-                        RUB: -1,
-                        AMD: -1,
-                        GEL: -1,
-                    }
-                })
-            })
-            .catch(callback)
+    if (coinMarketCapCurrencies.has(currency.code)) {
+        getCoinMarketCapRates(currency, callback)
     } else {
         coinbase.getExchangeRates({'currency': currency.code}, function (err, response) {
             if (response) {
@@ -37,6 +23,30 @@ function getRates(currency, callback) {
             }
         });
     }
+}
+
+function getCoinMarketCapRates(currency, callback) {
+    fetch(
+        `https://pro-api.coinmarketcap.com/v2/tools/price-conversion?amount=1&id=${currency.id}&convert=USD`,
+        {method: 'GET', headers: {'X-CMC_PRO_API_KEY': process.env.CMC_API_KEY}}
+    )
+        .then(response => response.json())
+        .then(response => {
+            if (!response.data || !response.data.quote || !response.data.quote.USD) {
+                callback(JSON.stringify(response))
+                return
+            }
+            callback(null, {
+                currency: currency.code,
+                rates: {
+                    USD: response.data.quote.USD.price,
+                    RUB: -1,
+                    AMD: -1,
+                    GEL: -1,
+                }
+            })
+        })
+        .catch(callback)
 }
 
 function getSummary(callback) {
