@@ -7,7 +7,7 @@ const {getMemoryCache} = require("./service/snapshots");
 const currencies = snapshots.getWatchedCurrencies()
 
 function startFetchRatesJob() {
-    const job = schedule.scheduleJob('0 */5 * ? * *', function (fireDate) {
+    const job = schedule.scheduleJob('0 */30 * ? * *', function (fireDate) {
         rates.getRatesForCurrencies(currencies, function (err, data) {
             if (err) {
                 console.error(err);
@@ -30,7 +30,8 @@ function startDeleteOldSnapshotsJob() {
 }
 
 function startAnalyzeVolatilityJob() {
-    const job = schedule.scheduleJob('0 */5 * ? * *', function (fireDate) {
+    // Give rate requests and snapshot writes time to finish before analysis.
+    const job = schedule.scheduleJob('30 */30 * ? * *', function (fireDate) {
         console.log('startAnalyzeVolatilityJob')
         const previousSnapshotsWhichFiredAlert = snapshots.getMemoryCache().previousSnapshotsWhichFiredAlert
         console.log('previousSnapshotsWhichFiredAlert: ' + JSON.stringify(previousSnapshotsWhichFiredAlert, null, 4))
