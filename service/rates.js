@@ -13,7 +13,7 @@ const coinMarketCapCurrencies = new Set(['TON', 'NOT'])
 
 function getRates(currency, callback) {
     if (coinMarketCapCurrencies.has(currency.code)) {
-        getCoinMarketCapRates(currency, callback)
+        getCoinMarketCapRates([currency], callback)
     } else {
         coinbase.getExchangeRates({'currency': currency.code}, function (err, response) {
             if (response) {
@@ -25,28 +25,55 @@ function getRates(currency, callback) {
     }
 }
 
-function getCoinMarketCapRates(currency, callback) {
+// The callback is invoked for each available currency, as with getRates.
+function getRatesForCurrencies(currencies, callback) {
+    currencies.filter(currency => !coinMarketCapCurrencies.has(currency.code))
+        .forEach(currency => getRates(currency, callback))
+    const cmcCurrencies = currencies.filter(currency => coinMarketCapCurrencies.has(currency.code))
+    if (cmcCurrencies.length) {
+        getCoinMarketCapRates(cmcCurrencies, callback)
+    }
+}
+
+function getCoinMarketCapRates(currencies, callback) {
+    const ids = currencies.map(currency => currency.id).join(',')
     fetch(
-        `https://pro-api.coinmarketcap.com/v2/tools/price-conversion?amount=1&id=${currency.id}&convert=USD`,
-        {method: 'GET', headers: {'X-CMC_PRO_API_KEY': process.env.CMC_API_KEY}}
+        `https://pro-api.coinmarketcap.com/v3/cryptocurrency/quotes/latest?id=${ids}&convert=USD`,
+        {method: 'GET', headers: {'X-CMC_PRO_API_KEY': process.env.CMC_API_KEY}, timeout: 10000}
     )
-        .then(response => response.json())
         .then(response => {
-            if (!response.data || !response.data.quote || !response.data.quote.USD) {
-                callback(JSON.stringify(response))
-                return
+            if (!response.ok) {
+                throw new Error(`CoinMarketCap HTTP ${response.status}`)
             }
-            callback(null, {
-                currency: currency.code,
-                rates: {
-                    USD: response.data.quote.USD.price,
-                    RUB: -1,
-                    AMD: -1,
-                    GEL: -1,
-                }
-            })
+            return response.json()
         })
-        .catch(callback)
+        .then(response => {
+            if (!response || !response.status || Number(response.status.error_code) !== 0
+                || !Array.isArray(response.data)) {
+                throw new Error('CoinMarketCap returned an API error or invalid quotes')
+            }
+            return response.data
+        })
+        .then(data => {
+            currencies.forEach(currency => {
+                const asset = data.find(asset => asset && asset.id === currency.id)
+                const quote = asset && Array.isArray(asset.quote)
+                    && asset.quote.find(quote => quote && quote.symbol === 'USD')
+                if (!quote || !Number.isFinite(quote.price) || quote.price <= 0) {
+                    callback(new Error(`CoinMarketCap: missing or invalid USD price for ${currency.code}`))
+                    return
+                }
+                callback(null, {
+                    currency: currency.code,
+                    rates: {
+                        USD: quote.price,
+                        RUB: -1,
+                        AMD: -1,
+                        GEL: -1,
+                    }
+                })
+            })
+        }, callback)
 }
 
 function getSummary(callback) {
@@ -92,6 +119,7 @@ function getBalance(balance, callback) {
 
 module.exports = {
     getRates,
+    getRatesForCurrencies,
     getSummary,
     getBalance
 }

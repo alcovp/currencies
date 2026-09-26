@@ -8,15 +8,13 @@ const currencies = snapshots.getWatchedCurrencies()
 
 function startFetchRatesJob() {
     const job = schedule.scheduleJob('0 */5 * ? * *', function (fireDate) {
-        currencies.forEach((currency) => {
-            rates.getRates(currency, function (err, data) {
-                if (err) {
-                    console.error(err);
-                } else {
-                    console.log('got new snapshot: ' + data.currency + ' with usd rate: ' + data.rates.USD)
-                    snapshots.saveSnapshot(data).catch(console.error)
-                }
-            })
+        rates.getRatesForCurrencies(currencies, function (err, data) {
+            if (err) {
+                console.error(err);
+            } else {
+                console.log('got new snapshot: ' + data.currency + ' with usd rate: ' + data.rates.USD)
+                snapshots.saveSnapshot(data).catch(console.error)
+            }
         })
     });
 }
